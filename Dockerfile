@@ -35,4 +35,4 @@ RUN chmod 700 ./startup/start.py
 # Copy build files from previous step
 COPY --from=frontend /app/dist /app/build
 
-ENTRYPOINT python3 startup/start.py
+CMD python3 startup/start.py
