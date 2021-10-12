@@ -1,23 +1,14 @@
-FROM ubuntu:20.04
-ENV TZ=Europe/Minsk
-ENV DEBIAN_FRONTEND=noninteractive
+# Frontend builder, deps only
+FROM node:16 AS frontendbuilder
+WORKDIR /app
+COPY wg-manager-frontend/package*.json /app/
+RUN npm ci
 
-#COPY ./wg-manager /tmp/build
-RUN mkdir -p /tmp/build
-WORKDIR /tmp/build
-
-RUN apt-get update && apt-get install -y \
-  nodejs \
-  npm \
-  && rm -rf /var/lib/apt/lists/*
-
-
-RUN npm cache clean --force
-RUN npm install
-RUN npm install @angular/cli
-RUN node_modules/@angular/cli/bin/ng build --configuration="production"
-RUN rm -rf node_modules
-RUN apt-get purge nodejs npm -y
+FROM node:16 AS frontend
+WORKDIR /app
+COPY --from=frontendbuilder /app/node_modules /app/node_modules
+COPY wg-manager-frontend /app/
+RUN npm run build
 
 FROM ubuntu:20.04
 LABEL maintainer="per@sysx.no"
@@ -56,8 +47,6 @@ COPY docker/ ./startup
 RUN chmod 700 ./startup/start.py
 
 # Copy build files from previous step
-COPY --from=0 /tmp/build/dist /app/build
+COPY --from=frontend /app/dist /app/build
 
 ENTRYPOINT python3 startup/start.py
-
-
