@@ -22,9 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends\
   python3 \
   python3-pip \
   python3-dev \
-  python3-gunicorn \
-  python3-uvicorn \
-  gunicorn \
   && rm -rf /var/lib/apt/lists/*
 
 COPY wg-manager-backend/requirements.txt /app/
